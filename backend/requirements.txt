@@ -1,0 +1,16 @@
+Flask>=3.0
+Flask-SQLAlchemy>=3.1
+Flask-JWT-Extended>=4.6
+Flask-APScheduler>=1.13
+Flask-CORS>=4.0
+psycopg2-binary>=2.9
+pydantic>=2.0
+email-validator>=2.0
+pytesseract>=0.3
+Pillow>=10.0
+requests>=2.31
+python-dotenv>=1.0
+resend>=2.0
+python-dateutil>=2.9
+pytest>=8.0
+gunicorn>=21.2
