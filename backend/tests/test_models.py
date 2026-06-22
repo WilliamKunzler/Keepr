@@ -5,7 +5,7 @@ Cobrem RN06, RN07 e RN10, além do polimorfismo de `esta_em_risco()` (LSP).
 from datetime import date, timedelta
 
 from app.models.garantia import Garantia
-from app.models.produto import ProdutoAlimenticio, ProdutoEletronico
+from app.models.produto import ProdutoValidade, ProdutoGarantia
 
 HOJE = date.today()
 
@@ -38,11 +38,11 @@ def test_rn07_garantia_esta_vencendo_na_janela():
     assert longe.esta_vencendo(30) is False
 
 
-# --- ProdutoAlimenticio -----------------------------------------------------
+# --- ProdutoValidade --------------------------------------------------------
 
-def test_alimenticio_vencido_e_dias_para_vencer():
-    vencido = ProdutoAlimenticio(nome="Iogurte", data_validade=HOJE - timedelta(days=2))
-    futuro = ProdutoAlimenticio(nome="Leite", data_validade=HOJE + timedelta(days=5))
+def test_validade_vencido_e_dias_para_vencer():
+    vencido = ProdutoValidade(nome="Iogurte", data_validade=HOJE - timedelta(days=2))
+    futuro = ProdutoValidade(nome="Leite", data_validade=HOJE + timedelta(days=5))
     assert vencido.esta_vencido() is True
     assert vencido.dias_para_vencer() == -2
     assert futuro.esta_vencido() is False
@@ -50,16 +50,16 @@ def test_alimenticio_vencido_e_dias_para_vencer():
 
 
 # RN06 — alerta antes do vencimento
-def test_rn06_alimenticio_em_risco():
-    risco = ProdutoAlimenticio(nome="Leite", data_validade=HOJE + timedelta(days=3))
-    tranquilo = ProdutoAlimenticio(nome="Arroz", data_validade=HOJE + timedelta(days=90))
+def test_rn06_validade_em_risco():
+    risco = ProdutoValidade(nome="Leite", data_validade=HOJE + timedelta(days=3))
+    tranquilo = ProdutoValidade(nome="Arroz", data_validade=HOJE + timedelta(days=90))
     assert risco.esta_em_risco(7) is True
     assert tranquilo.esta_em_risco(7) is False
 
 
 # RN10 — vencidos destacados (to_dict expõe status)
 def test_rn10_to_dict_expoe_vencido_e_dias():
-    p = ProdutoAlimenticio(nome="Leite", data_validade=HOJE + timedelta(days=3))
+    p = ProdutoValidade(nome="Leite", data_validade=HOJE + timedelta(days=3))
     d = p.to_dict()
     assert d["vencido"] is False
     assert d["dias_para_vencer"] == 3
@@ -69,7 +69,7 @@ def test_rn10_to_dict_expoe_vencido_e_dias():
 
 def test_polimorfismo_esta_em_risco():
     """Subclasses respondem ao mesmo contrato com critérios próprios."""
-    alimenticio = ProdutoAlimenticio(nome="X", data_validade=HOJE + timedelta(days=1))
-    eletronico = ProdutoEletronico(nome="Y", data_compra=HOJE)  # sem garantia
-    assert alimenticio.esta_em_risco(7) is True
-    assert eletronico.esta_em_risco(30) is False
+    validade = ProdutoValidade(nome="X", data_validade=HOJE + timedelta(days=1))
+    garantia = ProdutoGarantia(nome="Y", data_compra=HOJE)  # sem garantia
+    assert validade.esta_em_risco(7) is True
+    assert garantia.esta_em_risco(30) is False

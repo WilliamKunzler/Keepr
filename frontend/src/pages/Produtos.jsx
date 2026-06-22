@@ -15,9 +15,12 @@ const TABS = [
   { id: "garantia", label: "Com Garantia" },
 ];
 
+const SEM_CATEGORIA = "sem";
+
 export function Produtos() {
   const [tab, setTab] = useState("todos");
   const [busca, setBusca] = useState("");
+  const [categoria, setCategoria] = useState(""); // "" = todas · "sem" = sem categoria · "<id>"
   const [modal, setModal] = useState(null);
   const qc = useQueryClient();
   const confirmar = useConfirm();
@@ -27,10 +30,48 @@ export function Produtos() {
     queryFn: () => api.list(busca || undefined),
   });
 
+  const categoriasQ = useQuery({
+    queryKey: ["categorias"],
+    queryFn: () => apiCategorias.list(),
+  });
+
   const filtrados = useMemo(() => {
     if (!lista.data) return [];
-    return tab === "todos" ? lista.data : lista.data.filter((p) => p.tipo === tab);
-  }, [lista.data, tab]);
+    return lista.data.filter((p) => {
+      const okTab = tab === "todos" || p.tipo === tab;
+      const okCategoria =
+        categoria === ""
+          ? true
+          : categoria === SEM_CATEGORIA
+            ? p.categoria_id == null
+            : String(p.categoria_id) === categoria;
+      return okTab && okCategoria;
+    });
+  }, [lista.data, tab, categoria]);
+
+  const filtroAtivo = tab !== "todos" || categoria !== "" || busca.trim() !== "";
+
+  const nomeCategoria =
+    categoria === SEM_CATEGORIA
+      ? "Sem categoria"
+      : categoriasQ.data?.find((c) => String(c.id) === categoria)?.nome ?? "";
+
+  function limparFiltros() {
+    setTab("todos");
+    setCategoria("");
+    setBusca("");
+  }
+
+  // Abre o modal de criação já com o filtro ativo pré-preenchido (categoria + tipo).
+  function adicionarComFiltro() {
+    setModal({
+      modo: "criar",
+      preset: {
+        categoria_id: /^\d+$/.test(categoria) ? Number(categoria) : null,
+        tipo: tab === "validade" || tab === "garantia" ? tab : null,
+      },
+    });
+  }
 
   const excluir = useMutation({
     mutationFn: (id) => api.remove(id),
@@ -59,7 +100,7 @@ export function Produtos() {
         <Button onClick={() => setModal({ modo: "criar" })}><Plus size={15} weight="bold" /> Adicionar</Button>
       </div>
 
-      <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:justify-between">
+      <div className="flex flex-col gap-2 lg:flex-row lg:items-center lg:justify-between">
         <div className="flex gap-1 bg-cream-50 border border-cream-200 rounded-lg p-1 w-fit">
           {TABS.map((t) => (
             <button
@@ -72,23 +113,53 @@ export function Produtos() {
             </button>
           ))}
         </div>
-        <Input
-          placeholder="Buscar por nome…"
-          value={busca}
-          onChange={(e) => setBusca(e.target.value)}
-          className="sm:max-w-xs"
-        />
+        <div className="flex flex-col sm:flex-row gap-2 sm:items-center">
+          <Select
+            value={categoria}
+            onChange={(e) => setCategoria(e.target.value)}
+            className="sm:w-48"
+            aria-label="Filtrar por categoria"
+          >
+            <option value="">Todas as categorias</option>
+            {categoriasQ.data?.map((c) => (
+              <option key={c.id} value={c.id}>{c.nome}</option>
+            ))}
+            <option value={SEM_CATEGORIA}>Sem categoria</option>
+          </Select>
+          <Input
+            placeholder="Buscar por nome…"
+            value={busca}
+            onChange={(e) => setBusca(e.target.value)}
+            className="sm:max-w-xs"
+          />
+        </div>
       </div>
 
       {lista.isLoading ? (
         <p className="text-sm text-ink-400">Carregando…</p>
       ) : filtrados.length === 0 ? (
-        <div className="bg-cream-50 border border-dashed border-cream-200 rounded-xl py-10 text-center">
-          <p className="text-sm text-ink-500">Nada por aqui ainda.</p>
-          <Button variant="ghost" className="mt-3" onClick={() => setModal({ modo: "criar" })}>
-            Cadastrar primeiro produto
-          </Button>
-        </div>
+        filtroAtivo ? (
+          <div className="bg-cream-50 border border-dashed border-cream-200 rounded-xl py-10 px-4 text-center">
+            <p className="text-sm text-ink-500">
+              {nomeCategoria
+                ? <>Nenhum produto na categoria <span className="font-medium text-ink-700">{nomeCategoria}</span>.</>
+                : "Nenhum produto encontrado com os filtros atuais."}
+            </p>
+            <div className="mt-3 flex flex-wrap items-center justify-center gap-2">
+              <Button onClick={adicionarComFiltro}>
+                <Plus size={15} weight="bold" /> Adicionar produto
+              </Button>
+              <Button variant="ghost" onClick={limparFiltros}>Limpar filtros</Button>
+            </div>
+          </div>
+        ) : (
+          <div className="bg-cream-50 border border-dashed border-cream-200 rounded-xl py-10 text-center">
+            <p className="text-sm text-ink-500">Nada por aqui ainda.</p>
+            <Button variant="ghost" className="mt-3" onClick={() => setModal({ modo: "criar" })}>
+              Cadastrar primeiro produto
+            </Button>
+          </div>
+        )
       ) : (
         <ul className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
           {filtrados.map((p) => (
@@ -134,8 +205,8 @@ function ProdutoItem({ produto, onEditar, onExcluir }) {
             <p className="text-xs text-ink-500 mt-0.5 line-clamp-1">{produto.descricao}</p>
           )}
           {produto.categoria && (
-            <span className="inline-block mt-1 text-[10px] text-amber-700 bg-amber-50 border border-amber-200 rounded-full px-2 py-0.5">
-              {produto.categoria}
+            <span className="inline-flex items-center gap-1 mt-1 text-[10px] text-amber-700 bg-amber-50 border border-amber-200 rounded-full px-2 py-0.5">
+              <Tag size={10} weight="fill" /> {produto.categoria}
             </span>
           )}
         </div>
@@ -183,6 +254,7 @@ function fmtData(iso) {
 function ProdutoModal({ modal, onFechar, onSalvo }) {
   const editando = modal.modo === "editar";
   const p = modal.produto;
+  const preset = modal.preset || {};
   const [form, setForm] = useState(
     editando
       ? {
@@ -196,10 +268,10 @@ function ProdutoModal({ modal, onFechar, onSalvo }) {
         garantia_meses: p.garantia?.meses || 12,
       }
       : {
-        tipo: "validade",
+        tipo: preset.tipo || "validade",
         nome: "",
         descricao: "",
-        categoria_id: "",
+        categoria_id: preset.categoria_id || "",
         data_validade: "",
         data_compra: "",
         numero_serie: "",

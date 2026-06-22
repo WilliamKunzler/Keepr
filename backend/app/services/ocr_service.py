@@ -54,7 +54,7 @@ Regras:
 - Retorne somente JSON válido, sem qualquer outro texto.
 """
 
-    def __init__(self, api_key: str, model: str = "gemini-1.5-flash") -> None:
+    def __init__(self, api_key: str, model: str = "gemini-3.5-flash") -> None:
         self.api_key = api_key
         self.model_name = model
 

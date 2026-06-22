@@ -41,13 +41,14 @@ Guarde a URL — ela vira a variável `DATABASE_URL`.
 1. **New → Web Service** → conecte o repo.
 2. **Root Directory:** `backend`
 3. **Build Command:** `pip install -r requirements.txt`
-4. **Start Command:** `gunicorn run:app --bind 0.0.0.0:$PORT --workers 2 --timeout 120`
+4. **Start Command:** `gunicorn run:app --bind 0.0.0.0:$PORT --workers 1 --timeout 120`
+   (use `--workers 1`: o APScheduler roda no processo e duplicaria os jobs com 2+ workers)
 5. **Environment** (aba Environment):
    - `DATABASE_URL` = a URL do passo 1
    - `SECRET_KEY` = (qualquer string aleatória longa)
    - `JWT_SECRET_KEY` = (outra string aleatória)
-   - `OCR_PROVIDER` = `ocrspace`
-   - `OCRSPACE_API_KEY` = `helloworld` (ou uma key própria de ocr.space)
+   - `GEMINI_API_KEY` = sua chave do Google AI Studio (https://aistudio.google.com/app/apikey)
+   - `GEMINI_MODEL` = `gemini-3.5-flash`
    - `CORS_ORIGINS` = a URL do frontend na Vercel (preencher após o passo 3)
 
 > Teste: `GET https://keepr-api.onrender.com/health` deve responder `{"status":"ok"}`.
@@ -85,8 +86,8 @@ createdb keepr            # ou: psql -U postgres -c "CREATE DATABASE keepr;"
 
 # 2. backend/.env
 DATABASE_URL=postgresql://postgres:postgres@localhost:5432/keepr
-OCR_PROVIDER=ocrspace
-OCRSPACE_API_KEY=helloworld
+GEMINI_API_KEY=sua_chave_do_google_ai_studio
+GEMINI_MODEL=gemini-3.5-flash
 
 # 3. Backend
 cd backend

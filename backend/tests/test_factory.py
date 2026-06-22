@@ -4,21 +4,21 @@ from datetime import date
 import pytest
 
 from app.models.factories import ProdutoFactory
-from app.models.produto import ProdutoAlimenticio, ProdutoEletronico
+from app.models.produto import ProdutoValidade, ProdutoGarantia
 
 HOJE = date.today()
 
 
 def test_factory_cria_subclasse_correta():
-    a = ProdutoFactory.criar("alimenticio", nome="Leite", data_validade=HOJE)
-    e = ProdutoFactory.criar("eletronico", nome="TV", data_compra=HOJE)
-    assert isinstance(a, ProdutoAlimenticio)
-    assert isinstance(e, ProdutoEletronico)
+    a = ProdutoFactory.criar("validade", nome="Leite", data_validade=HOJE)
+    e = ProdutoFactory.criar("garantia", nome="TV", data_compra=HOJE)
+    assert isinstance(a, ProdutoValidade)
+    assert isinstance(e, ProdutoGarantia)
 
 
 def test_factory_tipos_disponiveis():
     tipos = set(ProdutoFactory.tipos_disponiveis())
-    assert {"alimenticio", "eletronico"} <= tipos
+    assert {"validade", "garantia"} <= tipos
 
 
 def test_factory_tipo_desconhecido_levanta_value_error():

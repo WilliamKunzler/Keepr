@@ -62,7 +62,7 @@ No painel do serviço → **Environment**, adicione:
 | `JWT_SECRET_KEY` | outra string aleatória | ✅ |
 | `OCR_PROVIDER` | `gemini` | ✅ |
 | `GEMINI_API_KEY` | sua chave do Google AI Studio | ✅ |
-| `GEMINI_MODEL` | `gemini-1.5-flash` | ✅ |
+| `GEMINI_MODEL` | `gemini-3.5-flash` | ✅ |
 | `RESEND_API_KEY` | sua chave do Resend | ✅ |
 | `EMAIL_FROM` | `Keepr <notificacoes@seudominio.com>` | ✅ |
 | `EMAIL_TO_OVERRIDE` | seu email (enquanto sem domínio verificado no Resend) | ⚠️ |
@@ -146,7 +146,7 @@ SECRET_KEY=dev-secret
 JWT_SECRET_KEY=dev-jwt-secret
 OCR_PROVIDER=gemini
 GEMINI_API_KEY=sua_chave_aqui
-GEMINI_MODEL=gemini-1.5-flash
+GEMINI_MODEL=gemini-3.5-flash
 RESEND_API_KEY=sua_chave_resend
 EMAIL_FROM=Keepr <onboarding@resend.dev>
 EMAIL_TO_OVERRIDE=seuemail@gmail.com

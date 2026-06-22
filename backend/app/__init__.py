@@ -14,10 +14,6 @@ def create_app(config_class=Config):
 
     os.makedirs(app.config["UPLOAD_FOLDER"], exist_ok=True)
 
-    if app.config.get("OCR_PROVIDER") == "tesseract" and app.config.get("TESSERACT_CMD"):
-        import pytesseract
-        pytesseract.pytesseract.tesseract_cmd = app.config["TESSERACT_CMD"]
-
     CORS(
         app,
         resources={r"/*": {"origins": app.config["CORS_ORIGINS"]}},
