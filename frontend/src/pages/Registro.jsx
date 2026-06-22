@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Link, Navigate } from "react-router-dom";
 
 import { Button } from "../components/Button";
-import { Field, Input } from "../components/Field";
+import { Field, Input, PasswordInput } from "../components/Field";
 import { useAuth } from "../contexts/AuthContext";
 
 export function Registro() {
@@ -52,7 +52,7 @@ export function Registro() {
               <Input value={form.telefone} onChange={set("telefone")} autoComplete="tel" />
             </Field>
             <Field label="Senha" error={erro}>
-              <Input type="password" value={form.senha} onChange={set("senha")} required minLength={6} autoComplete="new-password" />
+              <PasswordInput value={form.senha} onChange={set("senha")} required minLength={6} autoComplete="new-password" />
             </Field>
 
             <Button type="submit" disabled={carregando} className="w-full">

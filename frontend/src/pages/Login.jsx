@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Link, Navigate, useLocation } from "react-router-dom";
 
 import { Button } from "../components/Button";
-import { Field, Input } from "../components/Field";
+import { Field, Input, PasswordInput } from "../components/Field";
 import { useAuth } from "../contexts/AuthContext";
 
 export function Login() {
@@ -53,8 +53,7 @@ export function Login() {
               />
             </Field>
             <Field label="Senha" error={erro}>
-              <Input
-                type="password"
+              <PasswordInput
                 value={senha}
                 onChange={(e) => setSenha(e.target.value)}
                 required
