@@ -7,6 +7,7 @@ import { Field, Input, Select } from "../components/Field";
 import { Modal } from "../components/Modal";
 import { useConfirm } from "../contexts/ConfirmContext";
 import { comprovantes as api } from "../api/endpoints";
+import { assetUrl } from "../api/client";
 
 export function Comprovantes() {
   const qc = useQueryClient();
@@ -120,7 +121,7 @@ function ComprovanteCard({ c, onAbrir, onExcluir }) {
     <li className="bg-cream-50 border border-cream-200 rounded-xl overflow-hidden">
       <button onClick={onAbrir} className="block w-full">
         <div className="aspect-[4/3] bg-cream-200 overflow-hidden">
-          <img src={c.url} alt="comprovante" className="w-full h-full object-cover" />
+          <img src={assetUrl(c.url)} alt="comprovante" className="w-full h-full object-cover" />
         </div>
         <div className="px-2.5 py-2 text-left">
           <div className="flex items-center justify-between">
@@ -158,8 +159,8 @@ function ComprovanteModal({ comprovante, onFechar, onConfirmado }) {
       title={comprovante.confirmado ? "Comprovante" : "Confirmar produtos"}
     >
       <div className="space-y-5">
-        <a href={comprovante.url} target="_blank" rel="noreferrer" className="block">
-          <img src={comprovante.url} alt="comprovante" className="w-full rounded-lg border border-cream-200" />
+        <a href={assetUrl(comprovante.url)} target="_blank" rel="noreferrer" className="block">
+          <img src={assetUrl(comprovante.url)} alt="comprovante" className="w-full rounded-lg border border-cream-200" />
         </a>
 
         {comprovante.valor_total != null && (
