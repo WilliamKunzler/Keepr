@@ -60,20 +60,38 @@ Regras:
 
     def extrair(self, imagem_bytes: bytes) -> ComprovanteData:
         import google.generativeai as genai
+        from google.api_core import exceptions as gexc
+        from google.api_core.retry import Retry
         from PIL import Image
 
         genai.configure(api_key=self.api_key)
         model = genai.GenerativeModel(self.model_name)
         imagem = Image.open(BytesIO(imagem_bytes))
 
+        # Sem retry automático: por padrão o SDK reenvia a mesma chamada várias
+        # vezes em caso de 429/503, e isso sozinho estoura a cota de 5 req/min do
+        # free tier. Com o predicate sempre False, é 1 upload = 1 requisição.
+        sem_retry = Retry(predicate=lambda _exc: False)
+
         try:
-            response = model.generate_content([self._PROMPT, imagem])
+            response = model.generate_content(
+                [self._PROMPT, imagem],
+                request_options={"retry": sem_retry, "timeout": 60},
+            )
             texto = response.text.strip()
             # Remove blocos markdown caso o modelo os inclua mesmo pedindo pra não
             if texto.startswith("```"):
                 texto = re.sub(r"^```[a-z]*\n?", "", texto)
                 texto = re.sub(r"\n?```$", "", texto)
             dados = json.loads(texto)
+        except gexc.ResourceExhausted:
+            return ComprovanteData(
+                texto_bruto=(
+                    "[Limite de requisições da IA atingido (free tier: 5/min). "
+                    "Aguarde cerca de 1 minuto e reenvie a nota.]"
+                ),
+                produtos_identificados=[],
+            )
         except Exception as exc:
             return ComprovanteData(
                 texto_bruto=f"[Gemini erro: {exc}]",
